@@ -1,6 +1,6 @@
 ---
 name: python-types
-description: Add and improve Python type hints — annotations on function signatures, generics with TypeVar / PEP 695 syntax, structural typing with Protocol, narrowing via TypeGuard / TypeIs, NewType for domain primitives, Literal, TypedDict, Self, and how to avoid Any. Use when the user asks to 'add type hints', 'type-annotate this', 'fix type errors', 'make this typed', 'improve typing'
+description: Add and improve Python type hints - function annotations, generics (TypeVar/PEP 695), Protocol, TypeGuard/TypeIs, NewType, Literal, TypedDict, Self, and avoiding Any. Use when asked to add type hints, fix type errors, or improve typing. 
 license: MIT
 compatibility: Python 3.11+. Type checker agnostic — examples work with ty, mypy, and pyright.
 metadata:
