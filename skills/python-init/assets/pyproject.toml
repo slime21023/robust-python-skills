@@ -1,0 +1,159 @@
+# Template pyproject.toml for a robust Python project.
+#
+# This template is written for a *src layout* (`src/my_project/`). For other
+# layouts:
+#   - flat: change `packages = ["src/my_project"]` -> `packages = ["my_project"]`,
+#     and drop `"src"` from `[tool.ruff].src` and `[tool.ty.src].include`.
+#   - non-installed app: delete `[build-system]` and `[tool.hatch.*]` entirely
+#     and run with `uv run python -m my_project`.
+#
+# Replace `my-project` and `my_project` (the package name uses underscores).
+# Adjust the ruff rule set if a specific group is too noisy.
+
+[project]
+name = "my-project"
+version = "0.1.0"
+description = "TODO: one-line description"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "TODO" }]
+dependencies = [
+    # Runtime deps go here. Keep them few. Pin major versions only.
+    # "pydantic>=2.6,<3",
+]
+
+[project.optional-dependencies]
+# Group optional runtime extras here, e.g. cli = ["typer>=0.12"].
+
+[dependency-groups]
+# uv reads dev deps from here.
+dev = [
+    "ruff>=0.6",
+    "ty>=0.0.1a1",     # Astral type checker; replace with mypy/pyright if unavailable.
+    "pytest>=8",
+    "pytest-cov>=5",
+    "hypothesis>=6.100",
+    "pre-commit>=3.7",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/my_project"]
+
+# ---------------------------------------------------------------------------
+# ruff: linter + formatter. One tool, no black/isort/flake8 needed.
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+extend-exclude = ["build", "dist", ".venv"]
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = 80
+
+[tool.ruff.lint]
+# Curated rule set: catches real bugs, enforces consistency, stays out of the
+# way of legitimate code. Add or remove groups based on team preference.
+select = [
+    "E", "W",     # pycodestyle
+    "F",          # pyflakes (unused imports, undefined names)
+    "I",          # isort
+    "B",          # bugbear (likely-bug patterns)
+    "UP",         # pyupgrade (modernize syntax)
+    "SIM",        # simplify
+    "RUF",        # ruff-specific
+    "N",          # pep8-naming
+    "C4",         # comprehensions
+    "PT",         # pytest style
+    "TCH",        # move type-only imports under TYPE_CHECKING
+    "RET",        # return statements
+    "PLC", "PLE", "PLW", # pylint conventions / errors / warnings
+    "S",          # bandit security
+    "ASYNC",      # async pitfalls
+    "PIE",        # misc cleanups
+    "ERA",        # eradicate dead code (commented-out)
+    "PTH",        # prefer pathlib over os.path
+    "T20",        # forbid print/pprint in library code
+]
+ignore = [
+    "E501",      # line length is enforced by the formatter
+    "S101",      # asserts are fine in tests; per-file override handles src
+    "PLW0603",   # `global` is fine when used deliberately
+    "RET504",    # explicit assign-then-return is often clearer
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S",         # asserts/hardcoded data are expected in tests
+    "PLR2004",   # magic numbers in tests are usually fine
+    "T20",       # print is OK for debug in tests
+]
+"scripts/**/*.py" = ["T20"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["my_project"]
+force-sort-within-sections = true
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "parents"
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+# ---------------------------------------------------------------------------
+# ty: Astral's type checker. Strict by default; loosen per-module if needed.
+# ---------------------------------------------------------------------------
+[tool.ty]
+# ty is pre-1.0. Keys may shift; check `ty --help` if a key here is rejected.
+
+[tool.ty.environment]
+python-version = "3.11"
+python = "./.venv"
+
+[tool.ty.src]
+include = ["src", "tests"]
+
+[tool.ty.rules]
+unresolved-import = "error"
+possibly-unbound-attribute = "error"
+possibly-unbound-import = "error"
+invalid-type-form = "error"
+
+# ---------------------------------------------------------------------------
+# pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = [
+    "-ra",
+    "--strict-config",
+    "--strict-markers",
+    "--cov=my_project",
+    "--cov-report=term-missing",
+    "--cov-fail-under=80",
+]
+xfail_strict = true
+filterwarnings = ["error"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests requiring external services",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["my_project"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]

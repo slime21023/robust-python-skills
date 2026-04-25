@@ -1,0 +1,43 @@
+# Cross-platform pre-commit hooks. Runs on Windows, Linux, and macOS.
+# Install once: uv run pre-commit install
+# Run on all files: uv run pre-commit run --all-files
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: mixed-line-ending
+        args: ["--fix=lf"]   # normalize to LF; works on Windows too
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # ty does not yet ship a pre-commit hook. Run it via uv from a local hook.
+  # `language: system` + `entry: uv run ...` works on every OS.
+  - repo: local
+    hooks:
+      - id: ty
+        name: ty (type check)
+        entry: uv run ty check
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: pytest-fast
+        name: pytest (fast tests only)
+        entry: uv run pytest -m "not slow and not integration" -q
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-push]
